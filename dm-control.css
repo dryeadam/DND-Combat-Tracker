@@ -1,0 +1,430 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(21deg, #2d1b3d, #1a0d2e, #0d0d0d);
+    color: #e0e0e0;
+    min-height: 100vh;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2.5fr;
+            gap: 0px;
+            margin-bottom: 20px;
+        }
+
+h1, h2 {
+        text-align: center;
+        margin-bottom: 20px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        margin-top: 0;;
+    }
+
+h1 {
+        font-size: 2.5em;
+        color: #f33a21; 
+    }
+
+h2 {
+        font-size: 1.5em;
+        color:  #f33a21;
+    }
+
+.session-panel {
+        background: rgba(15, 52, 96, 0.8);
+        border-radius: 15px;
+        padding: 20px;
+        margin: 30px;
+        margin-bottom: 0;
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(233, 69, 96, 0.3);
+        }
+
+.form-panel {
+    background: rgba(15, 52, 96, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 30px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(233, 69, 96, 0.3);
+}
+
+.form-group {
+            margin-bottom: 15px;
+        }
+        
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #f33a21;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    font-size: 14px;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: #f33a21;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.combat-panel {
+    background: rgba(15, 52, 96, 0.8);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 30px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(233, 69, 96, 0.3);
+    height: auto;
+    overflow:hidden
+}
+
+.turn-panel {
+    text-align: center;
+    margin-bottom: 20px;
+    height: 9.5em;
+    background: rgba(220, 53, 70, 0.295);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.current-turn {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-radius: 8px;
+}
+
+.turn-grid {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    place-items: center;
+    width: 25em;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.btn {
+    background: linear-gradient(45deg, #e94560, #f27121);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-align: center;
+    max-width: 120px;
+}
+
+.btn-secondary {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    border: none;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-align: center;
+    max-width: 120px;
+}
+
+.btn-link {
+    background: linear-gradient(45deg, #2835a7, #20c3c9);
+    border: none;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    margin-left: 25%;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-align: center;
+    max-width: 50%;
+}
+
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(233, 69, 96, 0.664);
+}
+
+.btn-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(88, 233, 69, 0.664);
+}
+
+.btn-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(69, 195, 233, 0.664);
+}
+
+.character-list {
+    margin-top: 20px;
+}
+
+.character-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.character-item.active-turn {
+    background: rgba(243, 58, 33, 0.3);
+    border-color: #f33a21;
+    box-shadow: 0 0 10px rgba(243, 58, 33, 0.5);
+}
+
+.character-info {
+    flex: 1;
+}
+
+.character-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.character-details {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+.character-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;  /* Added this line */
+}
+
+ /* The switch - the box around the slider */
+.switch {
+  position: relative;
+  width: 50px;
+  height: 28px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .3s;
+  transition: .3s;
+}
+
+.slider:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(236, 141, 16, 0.952);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 21px;
+  width: 21px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .3s;
+  transition: .3s;
+}
+
+input:checked + .slider {
+  background-color: #f39821;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #f39821;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(21px);
+  -ms-transform: translateX(21px);
+  transform: translateX(21px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+} 
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.checkbox-group .label-text {
+    margin-bottom: 0;
+    color: #f33a21;
+    font-weight: bold;
+}
+
+
+.resistance-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #f33a21;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.resistance-checkbox:hover {
+    background: rgba(243, 58, 33, 0.2);
+    transform: translateY(-1px);
+}
+
+.resistance-checkbox.used {
+    background: rgba(243, 58, 33, 0.6);
+    border-color: #ff6b6b;
+}
+
+.resistance-checkbox.used::after {
+    content: "✗";
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.character-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.character-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.character-portrait {
+    flex-shrink: 0;
+}
+
+.character-portrait img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #f33a21;
+    transition: transform 0.2s ease;
+    display: block;
+}
+
+.character-portrait img:hover {
+    transform: scale(1.05);
+}
+
+.portrait-fallback {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f33a21, #e94560);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 24px;
+    border: 2px solid #f33a21;
+    flex-shrink: 0;
+}
+
+.character-details-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.character-name {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 0;
+}
+
+.character-details {
+    font-size: 0.9em;
+    opacity: 0.8;
+    margin-bottom: 0;
+}
+
+.legendary-resistance-container {
+    margin-top: 5px;
+}
+
+.legendary-resistance-boxes {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.character-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-shrink: 0;
+}
