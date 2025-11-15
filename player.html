@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D&D Combat Tracker - Player Display</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(21deg, #2d1b3d, #1a0d2e, #0d0d0d);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        h1, h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #f33a21; 
+        }
+
+        h2 {
+            font-size: 1.5em;
+            color: #f33a21;
+        }
+
+        .combat-panel {
+            background: rgba(15, 52, 96, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 30px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(233, 69, 96, 0.3);
+            min-height: 30em;
+        }
+
+        .turn-panel {
+            text-align: center;
+            margin-bottom: 20px;
+            min-height: 9.5em;
+            background: rgba(220, 53, 70, 0.295);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(220, 53, 69, 0.3);
+        }
+
+        .current-turn {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-radius: 8px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .character-list {
+            margin-top: 20px;
+        }
+
+        .character-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .character-item.active-turn {
+            background: rgba(243, 58, 33, 0.3);
+            border-color: #f33a21;
+            box-shadow: 0 0 10px rgba(243, 58, 33, 0.5);
+            transform: scale(1.02);
+        }
+
+        .character-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .character-portrait {
+            flex-shrink: 0;
+        }
+
+        .character-portrait img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #f33a21;
+            transition: transform 0.2s ease;
+            display: block;
+        }
+
+        .portrait-fallback {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f33a21, #e94560);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 24px;
+            border: 2px solid #f33a21;
+            flex-shrink: 0;
+        }
+
+        .character-details-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .character-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 0;
+        }
+
+        .character-details {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 0;
+        }
+
+        .character-details a {
+            color: #f33a21;
+            text-decoration: none;
+        }
+
+        .character-details a:hover {
+            text-decoration: underline;
+        }
+
+        .legendary-resistance-container {
+            margin-top: 5px;
+        }
+
+        .legendary-resistance-boxes {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .resistance-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f33a21;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .resistance-checkbox.used {
+            background: rgba(243, 58, 33, 0.6);
+            border-color: #ff6b6b;
+        }
+
+        .resistance-checkbox.used::after {
+            content: "✗";
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.1em;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+
+        .connection-status.connected {
+            background: rgba(40, 167, 69, 0.8);
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+        }
+
+        .connection-status.connecting {
+            background: rgba(255, 193, 7, 0.8);
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status connecting" id="connectionStatus">Connecting...</div>
+    
+    <h1 style="margin-top: 20px">Player Display</h1>
+    
+    <div class="combat-panel">
+        <div class="turn-panel">
+            <h1>Round <span id="roundNumber">1</span></h1>
+            <div class="current-turn" id="currentTurnDisplay">
+                Waiting for combat to begin...
+            </div>
+        </div>
+        
+        <div class="character-list" id="characterList">
+            <div class="empty-state">
+                Waiting for DM to add characters...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== SUPABASE CONFIGURATION =====
+        // REPLACE THESE WITH YOUR ACTUAL CREDENTIALS
+        const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+        const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY_HERE';
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // ===== STATE =====
+        let gameState = {
+            chars: [],
+            currentTurn: 0,
+            round: 1,
+        };
+
+        let sessionId = null;
+
+        // ===== INITIALIZATION =====
+        function getSessionId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const id = urlParams.get('session');
+            
+            if (!id) {
+                document.getElementById('characterList').innerHTML = `
+                    <div class="empty-state">
+                        <h2 style="color: #f33a21;">No Session ID</h2>
+                        <p>Please use the link provided by your DM to view the combat tracker.</p>
+                    </div>
+                `;
+                updateConnectionStatus('disconnected');
+                return null;
+            }
+            
+            return id;
+        }
+
+        async function init() {
+            sessionId = getSessionId();
+            if (!sessionId) return;
+            
+            await loadFromSupabase();
+            subscribeToChanges();
+            updateDisplay();
+        }
+
+        // ===== SUPABASE OPERATIONS =====
+        async function loadFromSupabase() {
+            try {
+                updateConnectionStatus('connecting');
+                
+                const { data, error } = await supabase
+                    .from('combat_sessions')
+                    .select('*')
+                    .eq('session_id', sessionId)
+                    .single();
+                
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error loading:', error);
+                    updateConnectionStatus('disconnected');
+                    return;
+                }
+                
+                if (data) {
+                    gameState.chars = data.chars || [];
+                    gameState.currentTurn = data.current_turn || 0;
+                    gameState.round = data.round || 1;
+                    updateConnectionStatus('connected');
+                } else {
+                    updateConnectionStatus('connecting');
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                updateConnectionStatus('disconnected');
+            }
+        }
+
+        function subscribeToChanges() {
+            supabase
+                .channel('player_updates')
+                .on('postgres_changes', 
+                    { 
+                        event: '*', 
+                        schema: 'public', 
+                        table: 'combat_sessions',
+                        filter: `session_id=eq.${sessionId}`
+                    }, 
+                    (payload) => {
+                        if (payload.new) {
+                            gameState.chars = payload.new.chars || [];
+                            gameState.currentTurn = payload.new.current_turn || 0;
+                            gameState.round = payload.new.round || 1;
+                            updateDisplay();
+                            updateConnectionStatus('connected');
+                        }
+                    }
+                )
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        updateConnectionStatus('connected');
+                    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                        updateConnectionStatus('disconnected');
+                    }
+                });
+        }
+
+        // ===== UI UPDATE =====
+        function updateDisplay() {
+            document.getElementById('roundNumber').textContent = gameState.round;
+            
+            const currentTurnDisplay = document.getElementById('currentTurnDisplay');
+            if (gameState.chars.length === 0) {
+                currentTurnDisplay.textContent = 'Waiting for combat to begin...';
+            } else {
+                const currentChar = gameState.chars[gameState.currentTurn];
+                currentTurnDisplay.textContent = `Current Turn: ${currentChar.name}`;
+            }
+            
+            const characterList = document.getElementById('characterList');
+            
+            if (gameState.chars.length === 0) {
+                characterList.innerHTML = `
+                    <div class="empty-state">
+                        Waiting for DM to add characters...
+                    </div>
+                `;
+                return;
+            }
+            
+            characterList.innerHTML = '';
+
+            gameState.chars.forEach((char, index) => {
+                const charDiv = document.createElement('div');
+                charDiv.className = `character-item ${index === gameState.currentTurn ? 'active-turn' : ''}`;
+                
+                const charInfo = document.createElement('div');
+                charInfo.className = 'character-info';
+                
+                const portraitContainer = document.createElement('div');
+                portraitContainer.className = 'character-portrait';
+                
+                if (char.portrait) {
+                    const portraitImg = document.createElement('img');
+                    portraitImg.src = char.portrait;
+                    portraitImg.alt = `${char.name} portrait`;
+                    portraitImg.onerror = function() {
+                        this.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'portrait-fallback';
+                        fallback.textContent = char.name.charAt(0).toUpperCase();
+                        portraitContainer.appendChild(fallback);
+                    };
+                    portraitContainer.appendChild(portraitImg);
+                } else {
+                    const fallback = document.createElement('div');
+                    fallback.className = 'portrait-fallback';
+                    fallback.textContent = char.name.charAt(0).toUpperCase();
+                    portraitContainer.appendChild(fallback);
+                }
+                
+                const charDetailsContainer = document.createElement('div');
+                charDetailsContainer.className = 'character-details-container';
+                
+                const charName = document.createElement('div');
+                charName.className = 'character-name';
+                charName.textContent = char.name;
+                charDetailsContainer.appendChild(charName);
+                
+                const charDetails = document.createElement('div');
+                charDetails.className = 'character-details';
+                charDetails.textContent = `Initiative: ${char.initiative}${char.legendarySaves ? ` | Legendary Resistances: ${char.legendarySaves.current}/${char.legendarySaves.max}` : ''}`;
+                charDetailsContainer.appendChild(charDetails);
+                
+                if (char.stats) {
+                    const statsLink = document.createElement('div');
+                    statsLink.className = 'character-details';
+                    const link = document.createElement('a');
+                    link.href = char.stats;
+                    link.target = '_blank';
+                    link.textContent = 'View Stats';
+                    statsLink.appendChild(link);
+                    charDetailsContainer.appendChild(statsLink);
+                }
+                
+                if (char.legendarySaves) {
+                    if (!char.legendarySaves.used) {
+                        char.legendarySaves.used = [false, false, false];
+                    }
+                    
+                    const resistanceContainer = document.createElement('div');
+                    resistanceContainer.className = 'character-details legendary-resistance-container';
+                    
+                    const checkboxContainer = document.createElement('div');
+                    checkboxContainer.className = 'legendary-resistance-boxes';
+                    
+                    for (let i = 0; i < 3; i++) {
+                        const checkbox = document.createElement('div');
+                        checkbox.className = `resistance-checkbox ${char.legendarySaves.used[i] ? 'used' : ''}`;
+                        checkboxContainer.appendChild(checkbox);
+                    }
+                    
+                    resistanceContainer.appendChild(checkboxContainer);
+                    charDetailsContainer.appendChild(resistanceContainer);
+                }
+                
+                charInfo.appendChild(portraitContainer);
+                charInfo.appendChild(charDetailsContainer);
+                charDiv.appendChild(charInfo);
+                characterList.appendChild(charDiv);
+            });
+        }
+
+        function updateConnectionStatus(status) {
+            const statusEl = document.getElementById('connectionStatus');
+            statusEl.className = `connection-status ${status}`;
+            
+            switch(status) {
+                case 'connected':
+                    statusEl.textContent = '● Connected';
+                    break;
+                case 'disconnected':
+                    statusEl.textContent = '● Disconnected';
+                    break;
+                case 'connecting':
+                    statusEl.textContent = '● Connecting...';
+                    break;
+            }
+        }
+
+        // ===== START =====
+        window.onload = init;
+    </script>
+</body>
+</html>
